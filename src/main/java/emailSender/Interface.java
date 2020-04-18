@@ -1,10 +1,10 @@
 package emailSender;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.Timer;
+import java.util.*;
 
-public class Interface extends JFrame {
+public class Interface  {
 
     private JTextField emailDeEnviadorTextField;
     private JTextField contraseniaDelEnviadorTextField;
@@ -22,76 +22,78 @@ public class Interface extends JFrame {
     private JLabel totales;
     private JTextArea textArea1;
     private JButton agregarFotoButton;
+    private JFrame jframe;
     private JLabel enviandoMailA;
     private JPanel infoPanel;
-    public Interface() {
 
-        Timer timer = new Timer(1, action);
+    public static void main(String args[]) throws Exception {
+        new Interface().init();
+    }
+
+    private Interface()  {
+        jframe = new JFrame();
+    }
+
+    private void init() throws Exception  {
+
+        jframe.setVisible(true);
+        jframe.setContentPane(panell);
+        jframe.setSize(1000, 1500);
+        jframe.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        
+        final Fondo fondo = new Fondo();
+
+        final Timer timer = new Timer(500,
+            x -> {
+                try {
+                    TimeElapsedRound.setText("Tiempo pasado en la ronda: " + fondo.getChronometer().getElapsedTime() / 1000 / 60 + " : " + fondo.getChronometer().getElapsedTime() / 1000 % 60);
+                    timesPerRound.setText("Mails mandados en la ronda: " + fondo.getMailsEnviadosEnLaRonda());
+                    MailsTotales.setText("Mails totales enviados : " + fondo.getPointer());
+                    timeToWaitUntilFinished.setText(" Tiempo a esperar si se termina antes: " + ((3600000 - fondo.getChronometer().getElapsedTime()) / 60 / 1000) + " : " + (3600000 - (fondo.getChronometer().getElapsedTime()) / 1000) % 60);
+                    erroresTotal.setText("Errores en envio: " + fondo.getErrors());
+                    tiempoTotal.setText("Tiempo total corriendo: " + fondo.getTiempoTotal().getElapsedTime() / 60 / 1000 + " : " + (fondo.getTiempoTotal().getElapsedTime() / 1000) % 60);
+                    statuss.setText("Estado: " + fondo.getStatus());
+                    totales.setText("Cantidad de mails a enviar: " + fondo.getMailsTotales());
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    e.printStackTrace();
+                }
+            }
+        );
+
         timer.setInitialDelay(0);
-        setVisible(true);
-        setContentPane(panell);
-        setSize(1000, 1500);
 
-        enviarButton.addActionListener(e -> {
+        enviarButton.addActionListener(
+            e -> {
 
-            Main.setStatus("Enviando mails");
-            System.out.println("Executing");
-
-            timer.start();
-            Main.MaxMailsPerHour = Integer.parseInt(cantMaxima.getText());
-            Main.setEMAIL_TO(emailsAenviar.getText());
-            Main.setUSERNAME(emailDeEnviadorTextField.getText());
-            Main.setPASSWORD(contraseniaDelEnviadorTextField.getText());
-            Main.setMessageToSend(textArea1.getText());
-            if (Main.getUSERNAME().contains("iorl")) {
-                System.out.println("Setting iorl");
-                Main.setIorl(true);
-            }
-            if (Main.getUSERNAME().contains("gmail")) {
-                System.out.println("Gmail");
-                Main.setGmail(true);
-
-            }
-
-            Main main = new Main();
             try {
-                main.execute();
+                fondo.setStatus("Enviando mails");
+                System.out.println("Executing");
+                timer.start();
+                fondo.setMaxMailsPerHour(Integer.parseInt(cantMaxima.getText()));
+                final List<String> x = Arrays.asList(emailsAenviar.getText().split("\\s*;\\s*"));
+                fondo.setEmailTo(x);
+                fondo.setUsername(emailDeEnviadorTextField.getText());
+                fondo.setPassword(contraseniaDelEnviadorTextField.getText());
+                fondo.setMessageToSend(textArea1.getText());
+                if (fondo.getUsername().contains("iorl")) {
+                    System.out.println("Setting iorl");
+                    fondo.setServerEnum(Fondo.ServerEnum.iOrl);
+                }
+                if (fondo.getUsername().contains("gmail")) {
+                    System.out.println("Gmail");
+                    fondo.setServerEnum(Fondo.ServerEnum.gMail);
+                }
+
+                fondo.sendEmails();
+
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            }
-
 
         });
 
         agregarFotoButton.addActionListener(e -> textArea1.append("<img src=\"your url image here\">"));
     }
-
-    ActionListener action = new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent event) {
-
-            try {
-
-                TimeElapsedRound.setText("Tiempo pasado en la ronda: " + Main.chronometer.getElapsedTime() / 1000 / 60 + " : " + Main.chronometer.getElapsedTime() / 1000 % 60);
-                timesPerRound.setText("Mails mandados en la ronda: " + Main.mailsEnviadosEnLaRonda);
-                MailsTotales.setText("Mails totales enviados : " + Main.pointer);
-                timeToWaitUntilFinished.setText(" Tiempo a esperar si se termina antes: " + ((3600000 - Main.chronometer.getElapsedTime()) / 60 / 1000) + " : " + (3600000 - (Main.chronometer.getElapsedTime()) / 1000) % 60);
-                erroresTotal.setText("Errores en envio: " + Main.errores);
-                tiempoTotal.setText("Tiempo total corriendo: " + Main.tiempoTotal.getElapsedTime() / 60 / 1000 + " : " + (Main.tiempoTotal.getElapsedTime() / 1000) % 60);
-                statuss.setText("Estado: " + Main.status);
-                totales.setText("Cantidad de mails a enviar: " + Main.mailsTotales);
-            } catch (ArrayIndexOutOfBoundsException e) {
-                e.printStackTrace();
-
-
-            }
-        }
-
-    };
-
 }
