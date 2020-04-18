@@ -4,13 +4,13 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class Gui extends JFrame {
+public class Interface extends JFrame {
 
     private JTextField emailDeEnviadorTextField;
     private JTextField contraseniaDelEnviadorTextField;
     private JTextArea emailsAenviar;
     private JButton enviarButton;
-    private JPanel panel;
+    private JPanel panell;
     private JTextField cantMaxima;
     private JLabel TimeElapsedRound;
     private JLabel timesPerRound;
@@ -21,16 +21,15 @@ public class Gui extends JFrame {
     private JLabel statuss;
     private JLabel totales;
     private JTextArea textArea1;
-    private JPanel infoPanel;
-    private JLabel enviandoMailA;
     private JButton agregarFotoButton;
-
-    Gui() {
+    private JLabel enviandoMailA;
+    private JPanel infoPanel;
+    public Interface() {
 
         Timer timer = new Timer(1, action);
         timer.setInitialDelay(0);
-
-        add(panel);
+        setVisible(true);
+        setContentPane(panell);
         setSize(1000, 1500);
 
         enviarButton.addActionListener(e -> {

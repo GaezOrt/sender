@@ -101,8 +101,7 @@ public class Main extends SwingWorker<Void, Void> {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                Gui gui = new Gui();
-                gui.setVisible(true);
+                Interface gui = new Interface();
                 gui.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
             }
