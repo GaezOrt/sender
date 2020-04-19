@@ -38,7 +38,7 @@ public class Interface  {
 
         jframe.setVisible(true);
         jframe.setContentPane(panell);
-        jframe.setSize(1000, 1500);
+        jframe.setSize(1000, 1000);
         jframe.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -68,12 +68,18 @@ public class Interface  {
             e -> {
 
             try {
+                fondo.setPointer(0);
                 fondo.setStatus("Enviando mails");
                 System.out.println("Executing");
                 timer.start();
                 fondo.setMaxMailsPerHour(Integer.parseInt(cantMaxima.getText()));
                 final List<String> x = Arrays.asList(emailsAenviar.getText().split("\\s*;\\s*"));
-                fondo.setEmailTo(x);
+                final ArrayList<Email>emails= new ArrayList<>();
+                for(int i=0;x.size()>i;i++){
+                    Email email= new Email(x.get(i),false);
+                        emails.add(email);
+                }
+                fondo.setEmailTo(emails);
                 fondo.setUsername(emailDeEnviadorTextField.getText());
                 fondo.setPassword(contraseniaDelEnviadorTextField.getText());
                 fondo.setMessageToSend(textArea1.getText());

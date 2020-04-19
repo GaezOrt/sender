@@ -9,18 +9,18 @@ import java.util.*;
 import static javax.mail.Session.getInstance;
 
 public class Fondo  {
-
+    final Connect connect = new Connect();
     private static final String SMTP_SERVER = "Mailer.iorlarauz.com.ar";
 
     public enum ServerEnum { iOrl, gMail };
 
     private Chronometer chronometer;
-    private List<String> emails;
+    private List<Email> emails;
     private String messageToSend;
     private ServerEnum serverEnum;
     private String username = "";
     private String password = "";
-    private List<String> emailTo;
+    private List<Email> emailTo;
     private int pointer;
     private int mailsTotales;
     private int mailsEnviadosEnLaRonda;
@@ -50,7 +50,7 @@ public class Fondo  {
         return status;
     }
     
-    public void setEmailTo(List<String> newValue) {
+    public void setEmailTo(List<Email> newValue) {
         emailTo = newValue;
     }
 
@@ -58,112 +58,101 @@ public class Fondo  {
         password = v;
     }
 
-    public void setMessageToSend(String v) {
+    void setMessageToSend(String v) {
         messageToSend = v;
     }
 
-    public void setUsername(String v) {
+    void setUsername(String v) {
         username = v;
     }
 
-    public String getUsername() {
+    String getUsername() {
         return username;
     }
 
-    public int getPointer() {
+    int getPointer() {
         return pointer;
     }
 
-    public int getMailsTotales() {
+     void setPointer(int pointer) {
+        this.pointer = pointer;
+    }
+
+    int getMailsTotales() {
         return mailsTotales;
     }
 
-    public int getMailsEnviadosEnLaRonda() {
+    int getMailsEnviadosEnLaRonda() {
         return mailsEnviadosEnLaRonda;
     }
 
-    public int getErrors() {
+    int getErrors() {
         return errors;
     }
 
-    public Chronometer getTiempoTotal() {
+    Chronometer getTiempoTotal() {
         return tiempoTotal;
     }
 
-    public Chronometer getChronometer() {
+    Chronometer getChronometer() {
         return chronometer;
     }
 
-    public Fondo() {
+    Fondo() {
         chronometer = new Chronometer();
     }
 
-    public void sendEmails() {
+    void sendEmails() {
 
-        try {
+
             System.out.println("Empezando a mandar mails");
 
             tiempoTotal.start();
             mailsTotales = emailTo.size();
             amountOfEmailsInList = emailTo.size();
 
-            System.out.println(serverEnum);
-
             while (pointer < emailTo.size()) {
-
-                if (mailsEnviadosEnLaRonda == 0) {
-                    System.out.println("Empezando ronda");
-                    chronometer.start();
-                }
-
-                createSesion();
-                t = null;
-
                 try {
+                    if (mailsEnviadosEnLaRonda == 0) {
+                        System.out.println("Empezando ronda");
+                        chronometer.start();
+                    }
+                    if(emailTo.get(pointer).sent){
+                       continue;
+                    }
+                    createSesion();
                     t = (SMTPTransport) session.getTransport("smtp");
-                    System.out.println("Nuevo email " + emailTo.get(pointer));
+                    System.out.println("Nuevo email " + emailTo.get(pointer).sent);
                     setEmailSenderAndReceivers();
-                    System.out.println("1");
-                } catch (MessagingException a) {
-                    pointer++;
-                    errors++;
-                    a.printStackTrace();
-                    continue;
-                }
-
-                try {
-                    System.out.println("0");
                     setEmailSubjectAndBody();
-                    System.out.println("2");
                     sendEmailFinal();
-                } catch (NullPointerException | MessagingException r) {
+                    status = "Enviando mails";
+                    if (mailsEnviadosEnLaRonda == MaxMailsPerHour) {
+                        resetEverythingBasedOnEmailsSent();
+                    }
+                    if (chronometer.getElapsedTime() > 3600000) {
+                        resetEverythingBasedOnChronometer();
+                    }
 
-                    //  r.printStackTrace();
-                    recieveException(r.getMessage());
+                    if (emailTo.size() == pointer) {
+                        status = "Terminado";
+                        break;
+                    }
+                    pointer++;
+
+
+                } catch (Exception e) {
+                    emailTo.get(pointer).sent=false;
+                    connect.insertIntoTable(emailTo.get(pointer));
+                    errors++;
+                    pointer++;
+
+                    System.out.println(e.getMessage());
                     continue;
+                    // FIXME
                 }
-                status = "Enviando mails";
-                if (mailsEnviadosEnLaRonda == MaxMailsPerHour) {
-                    resetEverythingBasedOnEmailsSent();
-                }
-                if (chronometer.getElapsedTime() > 3600000) {
-                    resetEverythingBasedOnChronometer();
-                }
-
-                if (emailTo.size() == pointer) {
-                    status = "Terminado";
-                    break;
-                }
-                pointer++;
             }
-
-        } catch (Exception e) {
-            errors++;
-            pointer++;
-            System.out.println(e.getMessage());
-            // FIXME
         }
-    }
 
     private void createSesion() {
         if( serverEnum == ServerEnum.iOrl ) {
@@ -225,50 +214,56 @@ public class Fondo  {
      * Set senderAndReciever
      */
     private void setEmailSenderAndReceivers() throws MessagingException {
-        if( serverEnum == ServerEnum.iOrl ) {
-            message.setFrom(new InternetAddress(username));
 
-            message.setRecipients(Message.RecipientType.TO,
-                    InternetAddress.parse(emailTo.get(pointer), false));
-        }
-        else if( serverEnum == ServerEnum.gMail ) {
-            // Set From: header field of the header.
-            message.setFrom(new InternetAddress(username));
+            if (serverEnum == ServerEnum.iOrl) {
+                message.setFrom(new InternetAddress(username));
 
-            // Set To: header field of the header.
-            message.addRecipient(Message.RecipientType.TO, new InternetAddress(emailTo.get(pointer)));
+                message.setRecipients(Message.RecipientType.TO,
+                        InternetAddress.parse(emailTo.get(pointer).reciever, false));
+            } else if (serverEnum == ServerEnum.gMail) {
+                // Set From: header field of the header.
+                message.setFrom(new InternetAddress(username));
 
-        }
+                // Set To: header field of the header.
+                message.addRecipient(Message.RecipientType.TO, new InternetAddress(emailTo.get(pointer).reciever));
+
+            }
+
     }
 
     private void setEmailSubjectAndBody() throws MessagingException {
 
-        if( serverEnum == ServerEnum.iOrl ) {
-            message.setSubject("Guardia Otorrinolaringologica 24 hs");
-            message.setContent(messageToSend,"text/html");
-        }
 
-        if( serverEnum == ServerEnum.gMail ) {
-            // Set Subject: header field
-            message.setSubject("This is the Subject Line!");
-            // Now set the actual message
-            message.setText("This is actual message");
-            System.out.println("Sending");
-        }
+            if (serverEnum == ServerEnum.iOrl) {
+                message.setSubject("Guardia Otorrinolaringologica 24 hs");
+                message.setContent(messageToSend, "text/html");
+            }
+
+            if (serverEnum == ServerEnum.gMail) {
+                // Set Subject: header field
+                message.setSubject("This is the Subject Line!");
+                // Now set the actual message
+                message.setText("This is actual message");
+                System.out.println("Sending");
+            }
     }
 
     private void sendEmailFinal() throws MessagingException {
-        if( serverEnum == ServerEnum.iOrl ) {
-            t.connect(SMTP_SERVER, username, password);
-            t.sendMessage(message, message.getAllRecipients());
-            System.out.println("Mail enviado    Mails enviados:" + (pointer + 1));
-            mailsEnviadosEnLaRonda++;
-            t.close();
-        }
-        if( serverEnum == ServerEnum.gMail ) {
-            Transport.send(message);
-            System.out.println("Sent message");;
-        }
+
+            if (serverEnum == ServerEnum.iOrl) {
+                t.connect(SMTP_SERVER, username, password);
+                t.sendMessage(message, message.getAllRecipients());
+
+                emailTo.get(pointer).sent = true;
+                connect.insertIntoTable(emailTo.get(pointer));
+                System.out.println("Mail enviado    Mails enviados:" + (pointer + 1));
+                mailsEnviadosEnLaRonda++;
+                t.close();
+            }
+            if (serverEnum == ServerEnum.gMail) {
+                Transport.send(message);
+                System.out.println("Sent message");
+            }
     }
 
     /**
