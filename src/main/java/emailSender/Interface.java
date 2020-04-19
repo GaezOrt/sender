@@ -42,7 +42,7 @@ public class Interface  {
         jframe.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        
+
         final Fondo fondo = new Fondo();
 
         final Timer timer = new Timer(500,
@@ -63,7 +63,7 @@ public class Interface  {
         );
 
         timer.setInitialDelay(0);
-
+        timer.start();
         enviarButton.addActionListener(
             e -> {
 
@@ -85,8 +85,14 @@ public class Interface  {
                     System.out.println("Gmail");
                     fondo.setServerEnum(Fondo.ServerEnum.gMail);
                 }
-
-                fondo.sendEmails();
+                SwingWorker sw= new SwingWorker() {
+                    @Override
+                    protected Object doInBackground() throws Exception {
+                        fondo.sendEmails();
+                        return null;
+                    }
+                };
+                sw.execute();
 
             } catch (Exception ex) {
                 ex.printStackTrace();

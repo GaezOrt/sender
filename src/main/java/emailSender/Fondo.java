@@ -6,6 +6,8 @@ import javax.mail.internet.*;
 import java.time.*;
 import java.util.*;
 
+import static javax.mail.Session.getInstance;
+
 public class Fondo  {
 
     private static final String SMTP_SERVER = "Mailer.iorlarauz.com.ar";
@@ -102,12 +104,12 @@ public class Fondo  {
             System.out.println("Empezando a mandar mails");
 
             tiempoTotal.start();
-            mailsTotales = emails.size();
-            amountOfEmailsInList = emails.size();
+            mailsTotales = emailTo.size();
+            amountOfEmailsInList = emailTo.size();
 
             System.out.println(serverEnum);
 
-            while (pointer < emails.size()) {
+            while (pointer < emailTo.size()) {
 
                 if (mailsEnviadosEnLaRonda == 0) {
                     System.out.println("Empezando ronda");
@@ -119,8 +121,9 @@ public class Fondo  {
 
                 try {
                     t = (SMTPTransport) session.getTransport("smtp");
-                    System.out.println("Nuevo email " + emails.get(pointer));
+                    System.out.println("Nuevo email " + emailTo.get(pointer));
                     setEmailSenderAndReceivers();
+                    System.out.println("1");
                 } catch (MessagingException a) {
                     pointer++;
                     errors++;
@@ -129,7 +132,9 @@ public class Fondo  {
                 }
 
                 try {
+                    System.out.println("0");
                     setEmailSubjectAndBody();
+                    System.out.println("2");
                     sendEmailFinal();
                 } catch (NullPointerException | MessagingException r) {
 
@@ -145,7 +150,7 @@ public class Fondo  {
                     resetEverythingBasedOnChronometer();
                 }
 
-                if (emails.size() == pointer) {
+                if (emailTo.size() == pointer) {
                     status = "Terminado";
                     break;
                 }
@@ -166,7 +171,7 @@ public class Fondo  {
             prop.put("mail.smtp.auth", "false");
             prop.put("mail.smtp.host", SMTP_SERVER);
 
-            session = Session.getInstance(prop, null);
+            session = getInstance(prop, null);
             message = new MimeMessage(session);
             System.out.println("Creating session");
         }
@@ -180,7 +185,7 @@ public class Fondo  {
             prop.put("mail.smtp.auth", "true");
 
             // Get the Session object.// and pass username and password
-            session = Session.getInstance(prop, new Authenticator() {
+            session = getInstance(prop, new Authenticator() {
 
                 protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(username, password);
@@ -224,14 +229,14 @@ public class Fondo  {
             message.setFrom(new InternetAddress(username));
 
             message.setRecipients(Message.RecipientType.TO,
-                    InternetAddress.parse(emails.get(pointer), false));
+                    InternetAddress.parse(emailTo.get(pointer), false));
         }
         else if( serverEnum == ServerEnum.gMail ) {
             // Set From: header field of the header.
             message.setFrom(new InternetAddress(username));
 
             // Set To: header field of the header.
-            message.addRecipient(Message.RecipientType.TO, new InternetAddress(emails.get(pointer)));
+            message.addRecipient(Message.RecipientType.TO, new InternetAddress(emailTo.get(pointer)));
 
         }
     }
