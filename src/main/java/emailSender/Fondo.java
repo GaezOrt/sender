@@ -14,8 +14,7 @@ public class Fondo  {
 
     public enum ServerEnum { iOrl, gMail };
 
-    private Chronometer chronometer;
-    private List<Email> emails;
+    private Chronometer comienzoDeRonda;
     private String messageToSend;
     private ServerEnum serverEnum;
     private String username = "";
@@ -35,8 +34,6 @@ public class Fondo  {
     public void setServerEnum(ServerEnum serverEnum) {
         this.serverEnum = serverEnum;
     }
-
-    private int amountOfEmailsInList;
 
     public void setMaxMailsPerHour(int v) {
         MaxMailsPerHour = v;
@@ -94,12 +91,12 @@ public class Fondo  {
         return tiempoTotal;
     }
 
-    Chronometer getChronometer() {
-        return chronometer;
+    Chronometer getComienzoDeRonda() {
+        return comienzoDeRonda;
     }
 
     Fondo() {
-        chronometer = new Chronometer();
+        comienzoDeRonda = new Chronometer();
     }
 
     void sendEmails() {
@@ -109,13 +106,12 @@ public class Fondo  {
 
             tiempoTotal.start();
             mailsTotales = emailTo.size();
-            amountOfEmailsInList = emailTo.size();
 
             while (pointer < emailTo.size()) {
                 try {
                     if (mailsEnviadosEnLaRonda == 0) {
                         System.out.println("Empezando ronda");
-                        chronometer.start();
+                        comienzoDeRonda.start();
                     }
                     if(emailTo.get(pointer).sent){
                        continue;
@@ -130,7 +126,7 @@ public class Fondo  {
                     if (mailsEnviadosEnLaRonda == MaxMailsPerHour) {
                         resetEverythingBasedOnEmailsSent();
                     }
-                    if (chronometer.getElapsedTime() > 3600000) {
+                    if (comienzoDeRonda.getElapsedTime() > 3600000) {
                         resetEverythingBasedOnChronometer();
                     }
 
@@ -197,7 +193,7 @@ public class Fondo  {
      */
     private void resetEverythingBasedOnChronometer() {
         System.out.println("Resetting  chronometer");
-        chronometer.resetMeanTime();
+        comienzoDeRonda.resetMeanTime();
         mailsEnviadosEnLaRonda = 0;
     }
 
@@ -209,9 +205,9 @@ public class Fondo  {
     private void resetEverythingBasedOnEmailsSent() throws InterruptedException {
         status = "En espera desde " + Date.from(Instant.now());
         System.out.println(Date.from(Instant.now()));
-        Thread.sleep(3600000 - chronometer.getElapsedTime());
+        Thread.sleep(3600000 - comienzoDeRonda.getElapsedTime());
         System.out.println("Starting again");
-        chronometer.resetMeanTime();
+        comienzoDeRonda.resetMeanTime();
         mailsEnviadosEnLaRonda = 0;
     }
 

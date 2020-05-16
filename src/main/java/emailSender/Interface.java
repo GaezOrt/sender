@@ -48,10 +48,10 @@ public class Interface  {
         final Timer timer = new Timer(500,
             x -> {
                 try {
-                    TimeElapsedRound.setText("Tiempo pasado en la ronda: " + fondo.getChronometer().getElapsedTime() / 1000 / 60 + " : " + fondo.getChronometer().getElapsedTime() / 1000 % 60);
+                    TimeElapsedRound.setText("Tiempo pasado en la ronda: " + fondo.getComienzoDeRonda().getElapsedTime() / 1000 / 60 + " : " + fondo.getComienzoDeRonda().getElapsedTime() / 1000 % 60);
                     timesPerRound.setText("Mails mandados en la ronda: " + fondo.getMailsEnviadosEnLaRonda());
                     MailsTotales.setText("Mails totales enviados : " + fondo.getPointer());
-                    timeToWaitUntilFinished.setText(" Tiempo a esperar si se termina antes: " + ((3600000 - fondo.getChronometer().getElapsedTime()) / 60 / 1000) + " : " + (3600000 - (fondo.getChronometer().getElapsedTime()) / 1000) % 60);
+                    timeToWaitUntilFinished.setText(" Tiempo a esperar si se termina antes: " + ((3600000 - fondo.getComienzoDeRonda().getElapsedTime()) / 60 / 1000) + " : " + (3600000 - (fondo.getComienzoDeRonda().getElapsedTime()) / 1000) % 60);
                     erroresTotal.setText("Errores en envio: " + fondo.getErrors());
                     tiempoTotal.setText("Tiempo total corriendo: " + fondo.getTiempoTotal().getElapsedTime() / 60 / 1000 + " : " + (fondo.getTiempoTotal().getElapsedTime() / 1000) % 60);
                     statuss.setText("Estado: " + fondo.getStatus());
@@ -64,46 +64,52 @@ public class Interface  {
 
         timer.setInitialDelay(0);
         timer.start();
+
         enviarButton.addActionListener(
             e -> {
 
             try {
-                fondo.setPointer(0);
-                fondo.setStatus("Enviando mails");
-                System.out.println("Executing");
-                timer.start();
-                fondo.setMaxMailsPerHour(Integer.parseInt(cantMaxima.getText()));
-                final List<String> x = Arrays.asList(emailsAenviar.getText().split("\\s*;\\s*"));
-                final ArrayList<Email>emails= new ArrayList<>();
-                for(int i=0;x.size()>i;i++){
-                    Email email= new Email(x.get(i),false);
-                        emails.add(email);
-                }
-                fondo.setEmailTo(emails);
-                fondo.setUsername(emailDeEnviadorTextField.getText());
-                fondo.setPassword(contraseniaDelEnviadorTextField.getText());
-                fondo.setMessageToSend(textArea1.getText());
-                if (fondo.getUsername().contains("iorl")) {
-                    System.out.println("Setting iorl");
-                    fondo.setServerEnum(Fondo.ServerEnum.iOrl);
-                }
-                if (fondo.getUsername().contains("gmail")) {
-                    System.out.println("Gmail");
-                    fondo.setServerEnum(Fondo.ServerEnum.gMail);
-                }
-                SwingWorker sw= new SwingWorker() {
-                    @Override
-                    protected Object doInBackground() throws Exception {
-                        fondo.sendEmails();
-                        return null;
-                    }
-                };
-                sw.execute();
 
+                if ( textArea1.getText().isEmpty() ) {
+                    // definir
+                    fondo.setStatus("?");
+                }
+                else {
+                    final Thread thread = new Thread(
+                        () ->
+                        {
+                            fondo.setStatus("Enviando mails");
+                            System.out.println("Executing");
+                            fondo.setMaxMailsPerHour(Integer.parseInt(cantMaxima.getText()));
+                            final ArrayList<Email> emails = new ArrayList<>();
+                            for (String s : Arrays.asList(emailsAenviar.getText().split("\\s*;\\s*"))) {
+                                emails.add(new Email(s, false));
+                            }
+                            fondo.setEmailTo(emails);
+                            fondo.setUsername(emailDeEnviadorTextField.getText());
+                            fondo.setPassword(contraseniaDelEnviadorTextField.getText());
+                            fondo.setMessageToSend(textArea1.getText());
+                            if (fondo.getUsername().contains("iorl")) {
+                                System.out.println("Setting iorl");
+                                fondo.setServerEnum(Fondo.ServerEnum.iOrl);
+                            }
+                            if (fondo.getUsername().contains("gmail")) {
+                                System.out.println("Gmail");
+                                fondo.setServerEnum(Fondo.ServerEnum.gMail);
+                            }
+                            fondo.setPointer(0);
+                            fondo.sendEmails();
+                        }
+                    );
+
+                    System.out.println( "isDaemon()"+ thread.isDaemon());
+
+                    thread.setDaemon( false );
+                    thread.start();
+                }
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
-
         });
 
         agregarFotoButton.addActionListener(e -> textArea1.append("<img src=\"your url image here\">"));
