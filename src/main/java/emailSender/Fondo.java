@@ -152,6 +152,12 @@ public class Fondo  {
                     // FIXME
                 }
             }
+
+            if(errors>0){
+                errors=0;
+                pointer=0;
+                sendEmails();
+            }
         }
 
     private void createSesion() {
@@ -255,6 +261,7 @@ public class Fondo  {
                 t.sendMessage(message, message.getAllRecipients());
 
                 emailTo.get(pointer).sent = true;
+                connect.createTable();
                 connect.insertIntoTable(emailTo.get(pointer));
                 System.out.println("Mail enviado    Mails enviados:" + (pointer + 1));
                 mailsEnviadosEnLaRonda++;
@@ -266,24 +273,4 @@ public class Fondo  {
             }
     }
 
-    /**
-     * @param exception
-     * @throws InterruptedException recieves exception and acts based on it
-     */
-    private void recieveException(String exception) throws InterruptedException {
-        System.out.println(exception);
-        if (exception.equals("Exception reading response") || exception.contains("Couldn't connect to host")) {
-            status = "Error de conexion,esperando 5 minutos antes de tratar de nuevo";
-            Thread.sleep(20000);
-            // FIXME init();
-        } else if (exception.contains("Quota")) {
-            System.out.println("Quota exced");
-            status = "Esperando por limite de mails por hora";
-            Thread.sleep(3600000 - chronometer.getElapsedTime());
-        } else {
-            System.out.println("Invalid email");
-            errors++;
-            pointer++;
-        }
-    }
 }
