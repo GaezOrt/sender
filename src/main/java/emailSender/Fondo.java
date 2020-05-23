@@ -139,7 +139,7 @@ public class Fondo  {
 
                 } catch (Exception e) {
                     emailTo.get(pointer).sent=false;
-                    connect.insertIntoTable(emailTo.get(pointer));
+                    //connect.insertIntoTable(emailTo.get(pointer));
                     errors++;
                     pointer++;
 
@@ -167,6 +167,7 @@ public class Fondo  {
             System.out.println("Creating session");
         }
         else if( serverEnum == ServerEnum.gMail ) {
+
             // Setup mail server
             System.out.println("Starting");
             Properties prop = System.getProperties();
@@ -257,8 +258,8 @@ public class Fondo  {
                 t.sendMessage(message, message.getAllRecipients());
 
                 emailTo.get(pointer).sent = true;
-                connect.createTable();
-                connect.insertIntoTable(emailTo.get(pointer));
+              //  connect.createTable();
+               // connect.insertIntoTable(emailTo.get(pointer));
                 System.out.println("Mail enviado    Mails enviados:" + (pointer + 1));
                 mailsEnviadosEnLaRonda++;
                 t.close();

@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Class-Path: C:\Users\Gaston\IdeaProjects\sender2\src\main\java\emailSe
+ nder
+Main-Class: emailSender.Main
+
