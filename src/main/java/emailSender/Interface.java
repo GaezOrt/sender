@@ -6,6 +6,9 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import javax.swing.*;
 import javax.swing.Timer;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -31,6 +34,7 @@ public class Interface {
     private JLabel enviandoMailA;
     private JPanel infoPanel;
     private JTextField pathToFileTextField;
+    private JButton selectFileButton;
 
     public static void main(String args[]) throws Exception {
         new Interface().init();
@@ -70,10 +74,20 @@ public class Interface {
 
         timer.setInitialDelay(0);
         timer.start();
+        selectFileButton.addActionListener(e -> {
+            JFileChooser jFileChooser = new JFileChooser();
+            jFileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+            jFileChooser.setDialogTitle("Choose your Path!");
 
+            if (jFileChooser.showOpenDialog(selectFileButton) == JFileChooser.APPROVE_OPTION) {
+
+            }
+            Connect.getCSVFilePath = jFileChooser.getSelectedFile().getAbsolutePath();
+            System.out.println(Connect.getCSVFilePath);
+        });
         enviarButton.addActionListener(
                 e -> {
-
+                    Connect.whereToAddTheDatabase = "jdbc:sqlite:" + pathToFileTextField.getText();
                     try {
 
                         if (textArea1.getText().isEmpty()) {
@@ -141,7 +155,7 @@ public class Interface {
      */
     private void $$$setupUI$$$() {
         panells = new JPanel();
-        panells.setLayout(new GridLayoutManager(4, 3, new Insets(0, 0, 0, 0), -1, -1));
+        panells.setLayout(new GridLayoutManager(5, 3, new Insets(0, 0, 0, 0), -1, -1));
         final JScrollPane scrollPane1 = new JScrollPane();
         panells.add(scrollPane1, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(133, 17), null, 0, false));
         emailsAenviar = new JTextArea();
@@ -209,13 +223,16 @@ public class Interface {
         panells.add(cantMaxima, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         agregarFotoButton = new JButton();
         agregarFotoButton.setText("Agregar foto");
-        panells.add(agregarFotoButton, new GridConstraints(3, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        panells.add(agregarFotoButton, new GridConstraints(4, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         enviarButton = new JButton();
         enviarButton.setText("Enviar");
-        panells.add(enviarButton, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        panells.add(enviarButton, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         pathToFileTextField = new JTextField();
         pathToFileTextField.setText("pathToFile");
-        panells.add(pathToFileTextField, new GridConstraints(3, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        panells.add(pathToFileTextField, new GridConstraints(4, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        selectFileButton = new JButton();
+        selectFileButton.setText("Select file");
+        panells.add(selectFileButton, new GridConstraints(3, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**

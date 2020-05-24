@@ -17,6 +17,8 @@ public class Connect {
     static Connection con;
     static String URL_ADDRESS = "jdbc:sqlite:C:/sqlite/db/email.db";
     static String csvAddress = "C:/sqlite/db/Book2.csv";
+    static String getCSVFilePath;
+    static String whereToAddTheDatabase;
     static List<Email> emails = new ArrayList<Email>();
 
     List<Email> loadEmails() {
@@ -37,7 +39,7 @@ public class Connect {
         return emails;
     }
 
-    public static void main(String args[]) {
+    public static void main(String args[]) throws SQLException {
         loadEmailsFromCsv();
         insertemailsToDatabase();
         // getAmountOfEmails();
@@ -46,7 +48,7 @@ public class Connect {
     static List<Email> loadEmailsFromCsv() {
 
 
-        try (BufferedReader br = Files.newBufferedReader(Paths.get(csvAddress), StandardCharsets.ISO_8859_1)) {
+        try (BufferedReader br = Files.newBufferedReader(Paths.get(getCSVFilePath), StandardCharsets.ISO_8859_1)) {
             String line = br.readLine();
             while (line != null) {
                 String[] attributes = line.split(",");
@@ -81,12 +83,13 @@ public class Connect {
       return 0;
     }
 
-    static void insertemailsToDatabase() {
+    static void insertemailsToDatabase() throws SQLException {
         System.out.println(emails.size());
+       // con = DriverManager.getConnection(whereToAddTheDatabase);
+
         for (Email email : emails) {
             try {
-                con = DriverManager.getConnection(URL_ADDRESS);
-                PreparedStatement stmt = con.prepareStatement("INSERT INTO email VALUES (?,?)");
+                 PreparedStatement stmt = con.prepareStatement("INSERT INTO email VALUES (?,?)");
 
                 stmt.setString(1, email.reciever);
                 stmt.setBoolean(2, false);
@@ -101,8 +104,8 @@ public class Connect {
     }
 
 
-    public void createTable(String URL) {
-        File file = new File("C:\\sqlite\\db/email.db");
+    public static void createTable(String URL) {
+        File file = new File(whereToAddTheDatabase);
         if (file.mkdir()) {
             System.out.println("Se creo directorio");
         } else {
@@ -113,7 +116,8 @@ public class Connect {
                 + "	name boolean NOT NULL\n"
                 + ");";
         try {
-          //  con = DriverManager.getConnection(URL_ADDRESS);
+            System.out.println(whereToAddTheDatabase);
+            con = DriverManager.getConnection(whereToAddTheDatabase);
             Statement stmt = con.createStatement();
             stmt.execute(sql);
             System.out.println("Created table");

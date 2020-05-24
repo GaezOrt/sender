@@ -106,7 +106,7 @@ public class Fondo  {
     }
 
     void sendEmails(String pathToEmails) throws SQLException {
-
+            connect.createTable("");
             Connect.loadEmailsFromCsv();
             Connect.insertemailsToDatabase();
             System.out.println("Empezando a mandar mails");
@@ -114,20 +114,18 @@ public class Fondo  {
             tiempoTotal.start();
             mailsTotales = emailTo.size();
             emailTo=connect.loadEmails();
-
+            errors=0;
             while (pointer < connect.getAmountOfEmails()) {
                 try {
                     if (mailsEnviadosEnLaRonda == 0) {
                         System.out.println("Empezando ronda");
                         comienzoDeRonda.start();
                     }
-
                     if(connect.emailSent(emailTo.get(pointer))){
                        // Connect.con.close();
                         System.out.println("Email already sent");
                         pointer++;
                         continue;
-
                     }
                     createSesion();
                     t = (SMTPTransport) session.getTransport("smtp");
@@ -156,7 +154,6 @@ public class Fondo  {
                     //connect.updateDatabase(emailTo.get(pointer));
                     errors++;
                     pointer++;
-
                     System.out.println(e.getMessage());
                     continue;
                     // FIXME
