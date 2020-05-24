@@ -265,7 +265,7 @@ public class Fondo  {
                 t.sendMessage(message, message.getAllRecipients());
 
                 emailTo.get(pointer).sent = true;
-                connect.createTable(URL);
+               // connect.createTable(URL);
                 connect.updateDatabase(emailTo.get(pointer));
                 System.out.println("Mail enviado    Mails enviados:" + (pointer + 1));
                 mailsEnviadosEnLaRonda++;

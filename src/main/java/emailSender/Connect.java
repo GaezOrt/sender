@@ -121,6 +121,7 @@ public class Connect {
             Statement stmt = con.createStatement();
             stmt.execute(sql);
             System.out.println("Created table");
+            stmt.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
