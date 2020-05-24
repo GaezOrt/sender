@@ -3,6 +3,7 @@ package emailSender;
 import com.sun.mail.smtp.*;
 import javax.mail.*;
 import javax.mail.internet.*;
+import java.sql.SQLException;
 import java.time.*;
 import java.util.*;
 
@@ -30,6 +31,11 @@ public class Fondo  {
     private Session session;
     private Message message;
     private SMTPTransport t;
+     String URL;
+
+    public  void setURL(String URL) {
+        this.URL = URL;
+    }
 
     public void setServerEnum(ServerEnum serverEnum) {
         this.serverEnum = serverEnum;
@@ -99,29 +105,36 @@ public class Fondo  {
         comienzoDeRonda = new Chronometer();
     }
 
-    void sendEmails() {
+    void sendEmails(String pathToEmails) throws SQLException {
 
-
+            Connect.loadEmailsFromCsv();
+            Connect.insertemailsToDatabase();
             System.out.println("Empezando a mandar mails");
 
             tiempoTotal.start();
             mailsTotales = emailTo.size();
+            emailTo=connect.loadEmails();
 
-            while (pointer < emailTo.size()) {
+            while (pointer < connect.getAmountOfEmails()) {
                 try {
                     if (mailsEnviadosEnLaRonda == 0) {
                         System.out.println("Empezando ronda");
                         comienzoDeRonda.start();
                     }
-                    if(emailTo.get(pointer).sent){
-                       continue;
+
+                    if(connect.emailSent(emailTo.get(pointer))){
+                       // Connect.con.close();
+                        System.out.println("Email already sent");
+                        pointer++;
+                        continue;
+
                     }
                     createSesion();
                     t = (SMTPTransport) session.getTransport("smtp");
-                    System.out.println("Nuevo email " + emailTo.get(pointer).sent);
+                    System.out.println("Nuevo email " + emailTo.get(pointer).reciever);
                     setEmailSenderAndReceivers();
                     setEmailSubjectAndBody();
-                    sendEmailFinal();
+                    sendEmailFinal(pathToEmails);
                     status = "Enviando mails";
                     if (mailsEnviadosEnLaRonda == MaxMailsPerHour) {
                         resetEverythingBasedOnEmailsSent();
@@ -139,7 +152,8 @@ public class Fondo  {
 
                 } catch (Exception e) {
                     emailTo.get(pointer).sent=false;
-                    //connect.insertIntoTable(emailTo.get(pointer));
+                    //Connect.con.close();
+                    //connect.updateDatabase(emailTo.get(pointer));
                     errors++;
                     pointer++;
 
@@ -148,13 +162,9 @@ public class Fondo  {
                     // FIXME
                 }
             }
-
-            if(errors>0){
-                errors=0;
-                pointer=0;
-                sendEmails();
-            }
-        }
+            Connect.con.close();
+                status="Terminado";
+           }
 
     private void createSesion() {
         if( serverEnum == ServerEnum.iOrl ) {
@@ -238,7 +248,7 @@ public class Fondo  {
 
 
             if (serverEnum == ServerEnum.iOrl) {
-                message.setSubject("Guardia Otorrinolaringologica 24 hs");
+                message.setSubject("Instituto Otorrinolaringologico Arauz-Informacion importante.");
                 message.setContent(messageToSend, "text/html");
             }
 
@@ -251,15 +261,15 @@ public class Fondo  {
             }
     }
 
-    private void sendEmailFinal() throws MessagingException {
+    private void sendEmailFinal(String URL) throws MessagingException, SQLException {
 
             if (serverEnum == ServerEnum.iOrl) {
                 t.connect(SMTP_SERVER, username, password);
                 t.sendMessage(message, message.getAllRecipients());
 
                 emailTo.get(pointer).sent = true;
-              //  connect.createTable();
-               // connect.insertIntoTable(emailTo.get(pointer));
+                connect.createTable(URL);
+                connect.updateDatabase(emailTo.get(pointer));
                 System.out.println("Mail enviado    Mails enviados:" + (pointer + 1));
                 mailsEnviadosEnLaRonda++;
                 t.close();
