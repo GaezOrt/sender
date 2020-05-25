@@ -112,8 +112,8 @@ public class Fondo  {
             System.out.println("Empezando a mandar mails");
 
             tiempoTotal.start();
-            mailsTotales = emailTo.size();
-            emailTo=connect.loadEmails();
+        emailTo=Connect.emails;
+        mailsTotales = emailTo.size();
             errors=0;
             while (pointer < connect.getAmountOfEmails()) {
                 try {
