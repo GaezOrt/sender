@@ -2,12 +2,9 @@ package emailSender;
 
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
-
 import javax.swing.*;
 import javax.swing.Timer;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.*;
@@ -57,6 +54,7 @@ public class Interface {
         final Timer timer = new Timer(500,
                 x -> {
                     try {
+                        System.out.println( "thread:" + Thread.currentThread().getName() );
 
                         TimeElapsedRound.setText("Tiempo pasado en la ronda: " + fondo.getComienzoDeRonda().getElapsedTime() / 1000 / 60 + " : " + fondo.getComienzoDeRonda().getElapsedTime() / 1000 % 60);
                         timesPerRound.setText("Mails mandados en la ronda: " + fondo.getMailsEnviadosEnLaRonda());
@@ -74,64 +72,62 @@ public class Interface {
 
         timer.setInitialDelay(0);
         timer.start();
+
+        final StringBuffer csvFilePath = new StringBuffer();
+
         selectFileButton.addActionListener(e -> {
             JFileChooser jFileChooser = new JFileChooser();
             jFileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
             jFileChooser.setDialogTitle("Choose your Path!");
-
-            Connect.getCSVFilePath = jFileChooser.getSelectedFile().getAbsolutePath();
-            System.out.println(Connect.getCSVFilePath);
+            csvFilePath.setLength(0);
+            csvFilePath.append( jFileChooser.getSelectedFile().getAbsolutePath() );
         });
+
         enviarButton.addActionListener(
-                e -> {
-                    Connect.whereToAddTheDatabase = "jdbc:sqlite:" + pathToFileTextField.getText();
-                    try {
+            e -> {
 
-                        if (textArea1.getText().isEmpty()) {
-                            // definir
-                            fondo.setStatus("?");
-                        } else {
-                            final Thread thread = new Thread(
-                                    () ->
-                                    {
-                                        fondo.setStatus("Enviando mails");
-                                        System.out.println("Executing");
-                                        fondo.setMaxMailsPerHour(Integer.parseInt(cantMaxima.getText()));
-                                        final ArrayList<Email> emails = new ArrayList<>();
-                                        for (String s : Arrays.asList(emailsAenviar.getText().split("\\s*;\\s*"))) {
-                                            emails.add(new Email(s, false));
-                                        }
-                                        fondo.setURL(pathToFileTextField.getText());
-                                        fondo.setEmailTo(emails);
-                                        fondo.setUsername(emailDeEnviadorTextField.getText());
-                                        fondo.setPassword(contraseniaDelEnviadorTextField.getText());
-                                        fondo.setMessageToSend(textArea1.getText());
-                                        if (fondo.getUsername().contains("iorl")) {
-                                            System.out.println("Setting iorl");
-                                            fondo.setServerEnum(Fondo.ServerEnum.iOrl);
-                                        }
-                                        if (fondo.getUsername().contains("gmail")) {
-                                            System.out.println("Gmail");
-                                            fondo.setServerEnum(Fondo.ServerEnum.gMail);
-                                        }
-                                        fondo.setPointer(0);
-                                        try {
-                                            fondo.sendEmails();
-                                        } catch (SQLException ex) {
-                                            ex.printStackTrace();
-                                        }
+                if (textArea1.getText().isEmpty()) {
+                    // definir
+                    fondo.setStatus("?");
+                } else {
+                    final Thread thread = new Thread(
+                        () ->
+                        {
+                            try {
+                                if (csvFilePath.toString().isEmpty()) {
+                                    // GUI: definir el cvs path
+                                } else {
+                                    fondo.setStatus("Enviando mails");
+                                    System.out.println("Executing");
+                                    fondo.setMaxMailsPerHour(Integer.parseInt(cantMaxima.getText()));
+                                    fondo.setURL(pathToFileTextField.getText());
+                                    fondo.setUsername(emailDeEnviadorTextField.getText());
+                                    fondo.setPassword(contraseniaDelEnviadorTextField.getText());
+                                    fondo.setMessageToSend(textArea1.getText());
+                                    if (fondo.getUsername().contains("iorl")) {
+                                        System.out.println("Setting iorl");
+                                        fondo.setServerEnum(Fondo.ServerEnum.iOrl);
                                     }
-                            );
-
-                            System.out.println("isDaemon()" + thread.isDaemon());
-
-                            thread.setDaemon(false);
-                            thread.start();
+                                    if (fondo.getUsername().contains("gmail")) {
+                                        System.out.println("Gmail");
+                                        fondo.setServerEnum(Fondo.ServerEnum.gMail);
+                                    }
+                                    fondo.setPointer(0);
+                                    fondo.sendEmails(csvFilePath.toString());
+                                } catch(SQLException ex){
+                                    ex.printStackTrace();
+                                }
+                            }
                         }
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-                });
+                    );
+
+                    System.out.println("isDaemon()" + thread.isDaemon());
+
+                    thread.setDaemon(false);
+                    thread.start();
+                }
+            }
+        );
 
         agregarFotoButton.addActionListener(e -> textArea1.append("<img src=\"your url image here\">"));
     }

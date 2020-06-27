@@ -54,10 +54,6 @@ class Fondo {
         return status;
     }
 
-    void setEmailTo(List<Email> newValue) {
-        emailTo = newValue;
-    }
-
     void setPassword(String v) {
         password = v;
     }
@@ -106,14 +102,14 @@ class Fondo {
         comienzoDeRonda = new Chronometer();
     }
 
-    void sendEmails() throws SQLException {
+    void sendEmails( String csvFile ) throws SQLException {
+
+        // check
         Connect.createTable();
-        Connect.loadEmailsFromCsv();
-        Connect.insertemailsToDatabase();
+        Connect.loadEmailsFromCsvAndInsertemailsToDatabase( csvFile );
         System.out.println("Empezando a mandar mails");
 
         tiempoTotal.start();
-        emailTo = Connect.emails;
         mailsTotales = emailTo.size();
         errors = 0;
         while (pointer < connect.getAmountOfEmails()) {
@@ -122,15 +118,14 @@ class Fondo {
                     System.out.println("Empezando ronda");
                     comienzoDeRonda.start();
                 }
-                if (connect.emailSent(emailTo.get(pointer))) {
+                /*if (connect.emailSent(emailTo.get(pointer))) {
 
                     System.out.println("Email already sent");
                     pointer++;
                     continue;
-                }
+                }*/
                 createSesion();
                 t = (SMTPTransport) session.getTransport("smtp");
-                System.out.println("Nuevo email " + emailTo.get(pointer).reciever);
                 setEmailSenderAndReceivers();
                 setEmailSubjectAndBody();
                 sendEmailFinal();
