@@ -1,9 +1,9 @@
 package emailSender;
 
-public class Email {
+class Email {
     String reciever;
     boolean sent;
-    public  Email(String reciever, boolean sent){
+      Email(String reciever, boolean sent){
         this.reciever=reciever;
         this.sent=sent;
 

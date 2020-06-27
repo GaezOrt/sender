@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
 import java.util.ArrayList;
@@ -15,96 +14,16 @@ import java.util.List;
 public class Connect {
 
     static Connection con;
-    static String URL_ADDRESS = "jdbc:sqlite:C:/sqlite/db/email.db";
-    static String csvAddress = "C:/sqlite/db/Book2.csv";
     static String getCSVFilePath;
     static String whereToAddTheDatabase;
-    static List<Email> emails = new ArrayList<Email>();
+    static List<Email> emails = new ArrayList<>();
 
-    List<Email> loadEmails() {
-        try {
-           // con = DriverManager.getConnection(URL_ADDRESS);
-            PreparedStatement stmt = con.prepareStatement("SELECT * from email");
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                Email email = new Email(rs.getString(1), rs.getBoolean(2));
-                emails.add(email);
-                System.out.println("Email name: " + email.reciever);
-            }
-           // con.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return emails;
-    }
-
-    public static void main(String args[]) throws SQLException {
+    public static void main(String[] args) {
         loadEmailsFromCsv();
         insertemailsToDatabase();
-        // getAmountOfEmails();
-    }
+         }
 
-    static List<Email> loadEmailsFromCsv() {
-
-
-        try (BufferedReader br = Files.newBufferedReader(Paths.get(getCSVFilePath), StandardCharsets.ISO_8859_1)) {
-            String line = br.readLine();
-            while (line != null) {
-                String[] attributes = line.split(",");
-                Email email = new Email(attributes[0], false);
-                emails.add(email);
-                line = br.readLine();
-                System.out.println(email.reciever);
-            }
-            System.out.println("Amount of emailss on loading emails" + emails.size());
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.out.println("Emails size " + emails.size());
-        return emails;
-    }
-
-    int getAmountOfEmails() {
-        try {
-           // con = DriverManager.getConnection(URL_ADDRESS);
-            PreparedStatement stmt = con.prepareStatement("SELECT * from email");
-            ResultSet rs = stmt.executeQuery();
-            int counter=0;
-            while(rs.next()) {
-                 counter++;
-            }
-                System.out.println("Largo de base de datos" +counter);
-                return counter;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-      return 0;
-    }
-
-    static void insertemailsToDatabase() throws SQLException {
-        System.out.println(emails.size());
-       // con = DriverManager.getConnection(whereToAddTheDatabase);
-
-        for (Email email : emails) {
-            try {
-                 PreparedStatement stmt = con.prepareStatement("INSERT INTO email VALUES (?,?)");
-
-                stmt.setString(1, email.reciever);
-                stmt.setBoolean(2, false);
-                stmt.executeUpdate();
-
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-
-        }
-
-    }
-
-
-    public static void createTable(String URL) {
+    static void createTable() {
         File file = new File(whereToAddTheDatabase);
         if (file.mkdir()) {
             System.out.println("Se creo directorio");
@@ -127,7 +46,62 @@ public class Connect {
         }
     }
 
-    public boolean emailSent(Email email) {
+    static void loadEmailsFromCsv() {
+
+
+        try (BufferedReader br = Files.newBufferedReader(Paths.get(getCSVFilePath), StandardCharsets.ISO_8859_1)) {
+            String line = br.readLine();
+            while (line != null) {
+                String[] attributes = line.split(",");
+                Email email = new Email(attributes[0], false);
+                emails.add(email);
+                line = br.readLine();
+                System.out.println(email.reciever);
+            }
+            System.out.println("Amount of emailss on loading emails" + emails.size());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Emails size " + emails.size());
+    }
+
+    int getAmountOfEmails() {
+        try {
+            // con = DriverManager.getConnection(URL_ADDRESS);
+            PreparedStatement stmt = con.prepareStatement("SELECT * from email");
+            ResultSet rs = stmt.executeQuery();
+            int counter = 0;
+            while (rs.next()) {
+                counter++;
+            }
+            System.out.println("Largo de base de datos" + counter);
+            return counter;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    static void insertemailsToDatabase() {
+        for (Email email : emails) {
+            try {
+                PreparedStatement stmt = con.prepareStatement("INSERT INTO email VALUES (?,?)");
+
+                stmt.setString(1, email.reciever);
+                stmt.setBoolean(2, false);
+                stmt.executeUpdate();
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+    }
+
+
+    boolean emailSent(Email email) {
         try {
             //con = DriverManager.getConnection(URL_ADDRESS);
             PreparedStatement stmt = con.prepareStatement("SELECT * from email WHERE id = ?");
@@ -144,13 +118,8 @@ public class Connect {
         return false;
     }
 
-    public void updateDatabase(Email email) throws SQLException {
-           // con.close();
-            //con=null;
+    void updateDatabase(Email email) {
         try {
-
-            //con = DriverManager.getConnection(URL_ADDRESS);
-
             PreparedStatement stmt = con.prepareStatement("UPDATE  email SET name = ? WHERE id= ?");
             stmt.setString(2, email.reciever);
             stmt.setBoolean(1, true);

@@ -204,7 +204,7 @@
           </grid>
         </constraints>
         <properties>
-          <text value="pathToFile"/>
+          <text value="Donde crear la DB"/>
         </properties>
       </component>
       <component id="ed54e" class="javax.swing.JButton" binding="selectFileButton" default-binding="true">
