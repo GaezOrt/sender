@@ -79,9 +79,6 @@ public class Interface {
             jFileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
             jFileChooser.setDialogTitle("Choose your Path!");
 
-            if (jFileChooser.showOpenDialog(selectFileButton) == JFileChooser.APPROVE_OPTION) {
-
-            }
             Connect.getCSVFilePath = jFileChooser.getSelectedFile().getAbsolutePath();
             System.out.println(Connect.getCSVFilePath);
         });
@@ -119,7 +116,7 @@ public class Interface {
                                         }
                                         fondo.setPointer(0);
                                         try {
-                                            fondo.sendEmails(pathToFileTextField.getText());
+                                            fondo.sendEmails();
                                         } catch (SQLException ex) {
                                             ex.printStackTrace();
                                         }

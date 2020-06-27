@@ -106,7 +106,7 @@ class Fondo {
         comienzoDeRonda = new Chronometer();
     }
 
-    void sendEmails(String pathToEmails) throws SQLException {
+    void sendEmails() throws SQLException {
         Connect.createTable();
         Connect.loadEmailsFromCsv();
         Connect.insertemailsToDatabase();
@@ -123,7 +123,7 @@ class Fondo {
                     comienzoDeRonda.start();
                 }
                 if (connect.emailSent(emailTo.get(pointer))) {
-                    // Connect.con.close();
+
                     System.out.println("Email already sent");
                     pointer++;
                     continue;
@@ -180,8 +180,7 @@ class Fondo {
             prop.put("mail.smtp.ssl.enable", "true");
             prop.put("mail.smtp.auth", "true");
 
-            // Get the Session object.// and pass username and password
-            session = getInstance(prop, new Authenticator() {
+             session = getInstance(prop, new Authenticator() {
 
                 protected PasswordAuthentication getPasswordAuthentication() {
                     return new PasswordAuthentication(username, password);
